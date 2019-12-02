@@ -1,18 +1,19 @@
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 10000 );
 var axesHelper = new THREE.AxesHelper( 100 );
-scene.add( axesHelper );
+// scene.add( axesHelper );
 
 var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setClearColor ( 0xffffff );
 document.body.appendChild( renderer.domElement );
 
-camera.position.x = 1200;
-camera.position.y = 2000;
-camera.position.z = 2000;
+camera.position.x = 1000;
+camera.position.y = 1500;
+camera.position.z = 1500;
 
 var control = new THREE.OrbitControls(camera, renderer.domElement);
+control.target.set(0,-1800, 0)
 control.enableDamping = true;
 control.dampingFactor = 0.25;
 control.enableZoom = true;
@@ -92,6 +93,7 @@ function animate(time){
     requestAnimationFrame( animate );
 
     renderer.render(scene, camera);
+    control.update();
     
     TWEEN.update();
 }
@@ -255,9 +257,71 @@ document.addEventListener("keydown", function(e){
             delay += is_moved?500:0
             if (is_moved || is_joined)
                 setTimeout(random_generate, delay)
+            is_animating = false
             break;
         case 38:
             //top
+            is_animating = true
+            is_joined = false
+            last_joined = false
+            tween = null
+            for (x=0; x<num_cube; x++){
+                for (y=0; y<num_cube; y++){
+                    i = num_cube*y + x
+                    
+                    if(last_joined) {last_joined = false; continue;}
+                    if(cube_arr[i] == null || y == 0) continue;
+
+                    for (v=y-1; v>=0; v--){
+                        j = num_cube*v + x
+                        
+                        if (cube_arr[j] == null) continue;
+                        if (cube_arr[j].number != cube_arr[i].number) break;
+
+                        cube_arr[j].number += cube_arr[i].number
+                        var new_cube = create_cube(j, cube_arr[j].number)
+                        combine_animation(cube_arr[i].geometry, cube_arr[j].geometry, new_cube).start()
+
+                        cube_arr[j].geometry = new_cube
+                        cube_arr[i] = null
+                        last_joined = true;
+                        is_joined = true;
+                        break;
+                    }
+                }
+            }
+
+            delay = is_joined?500:0
+
+            is_moved = false
+            var temp = []
+            for (i=0; i<Math.pow(num_cube, 2); i++) temp.push(null);
+            var idx = 0, idx_i = 0
+            for (x=0; x<num_cube; x++){
+                for (y=0; y<num_cube; y++){
+                    i = num_cube*y + x
+                    
+                    if(y == 0){
+                        idx_i = y
+                        idx = num_cube*idx_i + x
+                    }
+
+                    if(cube_arr[i] == null) continue;
+                    temp[idx] = cube_arr[i]
+                    
+                    swipe_animation(cube_arr[i].geometry, get_position(idx)).delay(delay).start()
+                    if (i != idx)
+                        is_moved = true
+                    idx_i++
+                    idx = num_cube*idx_i + x
+                }
+            }
+
+            cube_arr = temp
+            delay += is_moved?500:0
+            if (is_moved || is_joined)
+                setTimeout(random_generate, delay)
+            is_animating = false
             break;
         case 39:
             //right
@@ -307,9 +371,72 @@ document.addEventListener("keydown", function(e){
             delay += is_moved?500:0
             if (is_moved || is_joined)
                 setTimeout(random_generate, delay)
+            is_animating = false
             break;
         case 40:
             //bottom
+            is_animating = true
+            is_joined = false
+            last_joined = false
+            tween = null
+            for (x=num_cube-1; x>=0; x--){
+                for (y=num_cube-1; y>=0; y--){
+                    i = num_cube*y + x
+                    
+                    if(last_joined) {last_joined = false; continue;}
+                    if(cube_arr[i] == null || y == num_cube-1) continue;
+
+                    for (v=y+1; v<num_cube; v++){
+                        j = num_cube*v + x
+                        
+                        if (cube_arr[j] == null) continue;
+                        if (cube_arr[j].number != cube_arr[i].number) break;
+
+                        cube_arr[j].number += cube_arr[i].number
+                        var new_cube = create_cube(j, cube_arr[j].number)
+                        combine_animation(cube_arr[i].geometry, cube_arr[j].geometry, new_cube).start()
+
+                        cube_arr[j].geometry = new_cube
+                        cube_arr[i] = null
+                        last_joined = true;
+                        is_joined = true;
+                        break;
+                    }
+                }
+            }
+
+            delay = is_joined?500:0
+
+            is_moved = false
+            var temp = []
+            for (i=0; i<Math.pow(num_cube, 2); i++) temp.push(null);
+
+            var idx = 0, idx_i = 0
+            for (x=num_cube-1; x>=0; x--){
+                for (y=num_cube-1; y>=0; y--){
+                    i = num_cube*y + x
+                    
+                    if(y == num_cube-1){
+                        idx_i = y
+                        idx = num_cube*idx_i + x
+                    }
+
+                    if(cube_arr[i] == null) continue;
+                    temp[idx] = cube_arr[i]
+                    
+                    swipe_animation(cube_arr[i].geometry, get_position(idx)).delay(delay).start()
+                    if (i != idx)
+                        is_moved = true
+                    idx_i--
+                    idx = num_cube*idx_i + x
+                }
+            }
+
+            cube_arr = temp
+            delay += is_moved?500:0
+            if (is_moved || is_joined)
+                setTimeout(random_generate, delay)
+            is_animating = false
             break;
     }
 })

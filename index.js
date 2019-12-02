@@ -37,10 +37,7 @@ scene.add(toplight);
 
 
 
-cube_arr = []
-for (i=0; i<25; i++)
-    cube_arr.push(null);
-
+num_cube = 5
 first_pos_x = 0
 first_pos_z = 0
 cube_size = 200
@@ -59,11 +56,16 @@ var colors = {
     2048:'#7e1c9c',
     4096:'#9c1c4f'
 };
+is_animating = false
+
+cube_arr = []
+for (i=0; i<Math.pow(num_cube, 2); i++)
+    cube_arr.push(null);
 
 var cube_geo = new THREE.BoxGeometry( cube_size, cube_size, cube_size );
 
-var block_geo_horizontal = new THREE.BoxGeometry( cube_size, cube_size, cube_size * 7 + margin * 6 );
-var block_geo_vertical = new THREE.BoxGeometry( cube_size * 7 + margin * 6, cube_size, cube_size );
+var block_geo_horizontal = new THREE.BoxGeometry( cube_size, cube_size, cube_size * (num_cube+2) + margin * (num_cube+1) );
+var block_geo_vertical = new THREE.BoxGeometry( cube_size * (num_cube+2) + margin * (num_cube+1), cube_size, cube_size );
 
 var block_left = new THREE.Mesh(block_geo_horizontal, new THREE.MeshPhongMaterial( { color: 0x000000, wireframe: false } ));
 var block_right = new THREE.Mesh(block_geo_horizontal, new THREE.MeshPhongMaterial( { color: 0x000000, wireframe: false } ));
@@ -73,10 +75,10 @@ var block_bottom = new THREE.Mesh(block_geo_vertical, new THREE.MeshPhongMateria
 block_left.position.z = block_left.geometry.parameters.depth/2 + first_pos_z - (cube_size + margin)
 block_left.position.x = block_left.geometry.parameters.width/2 + first_pos_x - (cube_size + margin)
 block_right.position.z = block_right.geometry.parameters.depth/2 + first_pos_z - (cube_size + margin)
-block_right.position.x = block_right.geometry.parameters.width/2 + first_pos_x + (cube_size + margin) * 5
+block_right.position.x = block_right.geometry.parameters.width/2 + first_pos_x + (cube_size + margin) * num_cube
 block_top.position.z = block_top.geometry.parameters.depth/2 + first_pos_z - (cube_size + margin)
 block_top.position.x = block_top.geometry.parameters.width/2 + first_pos_x - (cube_size + margin)
-block_bottom.position.z = block_bottom.geometry.parameters.depth/2 + first_pos_z + (cube_size + margin) * 5
+block_bottom.position.z = block_bottom.geometry.parameters.depth/2 + first_pos_z + (cube_size + margin) * num_cube
 block_bottom.position.x = block_bottom.geometry.parameters.width/2 + first_pos_x - (cube_size + margin)
 
 scene.add(block_left);
@@ -100,7 +102,7 @@ function random_generate(first_time=false){
     const initial_number = [2, 4]
     var null_position = []
     var selected_position = []
-    for (i=0; i<25; i++){
+    for (i=0; i<Math.pow(num_cube, 2); i++){
         if (cube_arr[i] == null)
             null_position.push(i)
     }
@@ -142,8 +144,8 @@ function create_cube(index, number){
 
 function get_position(index){
     return {
-        x : (index % 5 * (cube_size + margin)) + (first_pos_x + 0.5 * cube_size ),
-        z : (Math.floor(index / 5) * (cube_size + margin)) + (first_pos_z + 0.5 * cube_size ),
+        x : (index % num_cube * (cube_size + margin)) + (first_pos_x + 0.5 * cube_size ),
+        z : (Math.floor(index / num_cube) * (cube_size + margin)) + (first_pos_z + 0.5 * cube_size ),
     }
 }
 
@@ -178,57 +180,133 @@ function getTexture(Twidth, Theight, left, top, text, style, font, backColor) {
     return texture;
 }
 
-var arr_coba = []
+function swipe_animation(cube, position_target, onComplete=null){
+    var tween = new TWEEN.Tween(cube.position).to(position_target, 500)
+                    .easing(TWEEN.Easing.Cubic.InOut)
+                    .onUpdate(function(){
+                        is_animating = true;
+                    });
+    tween.onComplete(function(){
+        if (onComplete != null)
+            onComplete()
+        is_animating = false
+    });
+    return tween;
+}
 
-for (i=0; i<25; i++)
-    arr_coba.push(null)
-
-arr_coba[0] = 4
-arr_coba[1] = 2
-arr_coba[2] = 4
-arr_coba[3] = 2
-arr_coba[4] = 4
+function combine_animation(cube, cube_target, new_cube){
+    var tween = swipe_animation(cube, cube_target.position, function(){
+        scene.remove(cube)
+        scene.remove(cube_target)
+        scene.add(new_cube)
+    });
+    return tween;
+}
 
 document.addEventListener("keydown", function(e){
+    if(is_animating) return;
+
     switch(e.keyCode){
         case 37:
             //left
+            is_animating = true
             is_joined = false
-            for (i=0; i<Math.pow(5,2); i++){
-                if(is_joined) {is_joined = false; continue;}
-                if(arr_coba[i] == null || i % 5 == 0) continue;
+            last_joined = false
+            tween = null
+            for (i=0; i<Math.pow(num_cube, 2); i++){
+                if(last_joined) {last_joined = false; continue;}
+                if(cube_arr[i] == null || i % num_cube == 0) continue;
 
-                for (j=i-1; j>=Math.floor(i/5)*5; j--){
-                    if (arr_coba[j] == null) continue;
-                    if (arr_coba[j] != arr_coba[i]) break;
+                for (j=i-1; j>=Math.floor(i/num_cube)*num_cube; j--){
+                    if (cube_arr[j] == null) continue;
+                    if (cube_arr[j].number != cube_arr[i].number) break;
 
-                    arr_coba[j] += arr_coba[i]
-                    arr_coba[i] = null
+                    cube_arr[j].number += cube_arr[i].number
+                    var new_cube = create_cube(j, cube_arr[j].number)
+                    combine_animation(cube_arr[i].geometry, cube_arr[j].geometry, new_cube).start()
+
+                    cube_arr[j].geometry = new_cube
+                    cube_arr[i] = null
+                    last_joined = true;
                     is_joined = true;
                     break;
                 }
             }
 
+            delay = is_joined?500:0
+            is_moved = false
             var temp = []
-            for (i=0; i<25; i++) temp.push(null);
+            for (i=0; i<Math.pow(num_cube, 2); i++) temp.push(null);
             var idx = 0
-            for (i=0; i<Math.pow(5,2); i++){
-                if(arr_coba[i] == null) continue;
-                if(i % 5 == 0){
+            for (i=0; i<Math.pow(num_cube, 2); i++){
+                if(i % num_cube == 0){
                     idx = i
                 }
-                temp[idx] = arr_coba[i]
+                if(cube_arr[i] == null) continue;
+                temp[idx] = cube_arr[i]
+                
+                swipe_animation(cube_arr[i].geometry, get_position(idx)).delay(delay).start()
+                if (i != idx)
+                is_moved = true
                 idx++
             }
-            arr_coba = temp
 
-            console.log(arr_coba)
+            cube_arr = temp
+            delay += is_moved?500:0
+            if (is_moved || is_joined)
+                setTimeout(random_generate, delay)
             break;
         case 38:
             //top
             break;
         case 39:
             //right
+            is_animating = true
+            is_joined = false
+            last_joined = false
+            tween = null
+            for (i=Math.pow(num_cube, 2)-1; i>=0; i--){
+                if(last_joined) {last_joined = false; continue;}
+                if(cube_arr[i] == null || i % num_cube == num_cube-1) continue;
+
+                for (j=i+1; j<=Math.floor(i/num_cube)*num_cube + (num_cube-1); j++){
+                    if (cube_arr[j] == null) continue;
+                    if (cube_arr[j].number != cube_arr[i].number) break;
+
+                    cube_arr[j].number += cube_arr[i].number
+                    var new_cube = create_cube(j, cube_arr[j].number)
+                    combine_animation(cube_arr[i].geometry, cube_arr[j].geometry, new_cube).start()
+
+                    cube_arr[j].geometry = new_cube
+                    cube_arr[i] = null
+                    last_joined = true;
+                    is_joined = true;
+                    break;
+                }
+            }
+
+            delay = is_joined?500:0
+            is_moved = false
+            var temp = []
+            for (i=0; i<Math.pow(num_cube, 2); i++) temp.push(null);
+            var idx = Math.pow(num_cube,2) - 1
+            for (i=idx; i>=0; i--){
+                if(i % num_cube == num_cube - 1){
+                    idx = i
+                }
+                if(cube_arr[i] == null) continue;
+                temp[idx] = cube_arr[i]
+                
+                swipe_animation(cube_arr[i].geometry, get_position(idx)).delay(delay).start()
+                if (i != idx)
+                    is_moved = true
+                idx--
+            }
+
+            cube_arr = temp
+            delay += is_moved?500:0
+            if (is_moved || is_joined)
+                setTimeout(random_generate, delay)
             break;
         case 40:
             //bottom

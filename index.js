@@ -16,6 +16,7 @@ var control = new THREE.OrbitControls(camera, renderer.domElement);
 control.enableDamping = true;
 control.dampingFactor = 0.25;
 control.enableZoom = true;
+control.enableKeys = false;
 
 var keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
 keyLight.position.set(-100, 0, 100);
@@ -78,8 +79,6 @@ block_top.position.x = block_top.geometry.parameters.width/2 + first_pos_x - (cu
 block_bottom.position.z = block_bottom.geometry.parameters.depth/2 + first_pos_z + (cube_size + margin) * 5
 block_bottom.position.x = block_bottom.geometry.parameters.width/2 + first_pos_x - (cube_size + margin)
 
-console.log(block_left.geometry.parameters)
-
 scene.add(block_left);
 scene.add(block_right);
 scene.add(block_top);
@@ -91,11 +90,14 @@ function animate(time){
     requestAnimationFrame( animate );
 
     renderer.render(scene, camera);
+    
+    TWEEN.update();
 }
 
 animate()
 
 function random_generate(first_time=false){
+    const initial_number = [2, 4]
     var null_position = []
     var selected_position = []
     for (i=0; i<25; i++){
@@ -110,12 +112,16 @@ function random_generate(first_time=false){
     }
     
     selected_position.forEach(function(val, idx){
-        cube_arr[val] = create_cube(val, 4096)
-        scene.add(cube_arr[val])
+        number = initial_number[Math.round(Math.random()*(initial_number.length-1))]
+        cube_arr[val] = {
+            number: number,
+            geometry: create_cube(val, number)
+        }
+        scene.add(cube_arr[val].geometry)
     })
 }
 
-function create_cube(position, number){
+function create_cube(index, number){
     var cube_color = colors[number]
     const texture = getTexture(cube_size, cube_size, 20, 125, number.toString(), "#ffffff", "Bold 80px Arial", cube_color);
     var materials = [
@@ -128,9 +134,17 @@ function create_cube(position, number){
     ];
     console.log(texture);
     var cube = new THREE.Mesh(cube_geo, new THREE.MeshFaceMaterial( materials ));
-    cube.position.x = (position % 5 * (cube_size + margin)) + (first_pos_x + 0.5 * cube_size )
-    cube.position.z = (Math.floor(position / 5) * (cube_size + margin)) + (first_pos_z + 0.5 * cube_size )
+    position = get_position(index)
+    cube.position.x = position.x
+    cube.position.z = position.z
     return cube
+}
+
+function get_position(index){
+    return {
+        x : (index % 5 * (cube_size + margin)) + (first_pos_x + 0.5 * cube_size ),
+        z : (Math.floor(index / 5) * (cube_size + margin)) + (first_pos_z + 0.5 * cube_size ),
+    }
 }
 
 function getTexture(Twidth, Theight, left, top, text, style, font, backColor) {
@@ -163,3 +177,61 @@ function getTexture(Twidth, Theight, left, top, text, style, font, backColor) {
     texture.needsUpdate = true;
     return texture;
 }
+
+var arr_coba = []
+
+for (i=0; i<25; i++)
+    arr_coba.push(null)
+
+arr_coba[0] = 4
+arr_coba[1] = 2
+arr_coba[2] = 4
+arr_coba[3] = 2
+arr_coba[4] = 4
+
+document.addEventListener("keydown", function(e){
+    switch(e.keyCode){
+        case 37:
+            //left
+            is_joined = false
+            for (i=0; i<Math.pow(5,2); i++){
+                if(is_joined) {is_joined = false; continue;}
+                if(arr_coba[i] == null || i % 5 == 0) continue;
+
+                for (j=i-1; j>=Math.floor(i/5)*5; j--){
+                    if (arr_coba[j] == null) continue;
+                    if (arr_coba[j] != arr_coba[i]) break;
+
+                    arr_coba[j] += arr_coba[i]
+                    arr_coba[i] = null
+                    is_joined = true;
+                    break;
+                }
+            }
+
+            var temp = []
+            for (i=0; i<25; i++) temp.push(null);
+            var idx = 0
+            for (i=0; i<Math.pow(5,2); i++){
+                if(arr_coba[i] == null) continue;
+                if(i % 5 == 0){
+                    idx = i
+                }
+                temp[idx] = arr_coba[i]
+                idx++
+            }
+            arr_coba = temp
+
+            console.log(arr_coba)
+            break;
+        case 38:
+            //top
+            break;
+        case 39:
+            //right
+            break;
+        case 40:
+            //bottom
+            break;
+    }
+})

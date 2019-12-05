@@ -123,6 +123,8 @@ function random_generate(first_time=false){
         }
         scene.add(cube_arr[val].geometry)
     })
+
+    count_score()
 }
 
 function create_cube(index, number){
@@ -142,6 +144,15 @@ function create_cube(index, number){
     cube.position.x = position.x
     cube.position.z = position.z
     return cube
+}
+
+function count_score(){
+    var score = 0
+    cube_arr.forEach(function(item){
+        if (item!=null)
+            score += item.number
+    });
+    document.getElementById("score").innerHTML = score
 }
 
 function get_position(index){

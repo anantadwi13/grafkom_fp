@@ -34,6 +34,7 @@ var colors = {
     rotateTween, cubes,
     isAnimating = false;
     gameNum = 0, maxScore = 0, score = 0;
+    var isPlaying = 0;
 
     //done
     function onkeydown( e ) {
@@ -96,6 +97,15 @@ var colors = {
 
     //done
     function newGame(){
+        if (isPlaying == 0) {
+            var myAudio = new Audio('../sound/ingame.mp3');
+            myAudio.addEventListener('ended', function() {
+                this.currentTime = 0;
+                this.play();
+            }, false);
+            myAudio.play();
+            isPlaying = 1;
+        }
         if(isAnimating)
             return;
         updateGameNum();
@@ -150,18 +160,15 @@ var colors = {
 
     function getCubesNumToSum(){
         var addedNum = 0;
-
         for (var y = cubeNum-1; y>0; y--)
             for (var x = 0; x < cubeNum; x++)
                 for (var z = 0; z < cubeNum; z++) {
-
                     if (cubes[x][y][z] != undefined &&
                         cubes[x][y - 1][z] != undefined &&
                         cubes[x][y][z].number == cubes[x][y - 1][z].number &&
                         cubes[x][y][z].moved == undefined &&
                         cubes[x][y - 1][z].moved == undefined
                     ) {
-
                         addedNum++;
                     }
                 }
@@ -170,7 +177,6 @@ var colors = {
 
     function getCubesNumToMove(){
         var movedNum = 0;
-
         for (var x = 0; x < cubeNum; x++)
             for(var y = 1; y<cubeNum; y++)
                 for (var z = 0; z < cubeNum; z++)
@@ -187,8 +193,19 @@ var colors = {
     }
 
     //done
+    cekSound = 0; level_score = 200;
     function updateScore(curScore){
         score += curScore;
+        if (score>200 && score%level_score<(level_score/2) && cekSound == 0) {
+            cekSound = 1; level_score *= 2;
+            var audio = new Audio('../sound/increase_score.mp3');
+            audio.play();
+        }
+        else if (score%level_score<(level_score/2) && cekSound == 1) {
+        }
+        else {
+            cekSound = 0;
+        }
         scoreLabel = $('#score').find('+span').text(score);
         if(score > getMaxScore()) {
             setMaxScore(score);
@@ -201,7 +218,6 @@ var colors = {
         for (var y = 1; y < cubeNum; y++)
             for (var x = 0; x < cubeNum; x++)
                 for (var z = 0; z < cubeNum; z++) {
-
                     if (cubes[x][y][z] != undefined && cubes[x][y-1][z] != undefined && 
                         cubes[x][y][z].number == cubes[x][y-1][z].number && cubes[x][y][z].moved == undefined &&
                         cubes[x][y-1][z].moved == undefined
@@ -348,7 +364,6 @@ var colors = {
         );
         trackBallControll = new THREE.OrbitControls(camera, mainCanvas);
         scene.add(camera);
-        //renderer.setClearColor(0xd3d3d3,1);
         render();
         initEvents();
         newGame();

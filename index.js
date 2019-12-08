@@ -4,7 +4,7 @@ var axesHelper = new THREE.AxesHelper( 100 );
 // scene.add( axesHelper );
 
 var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
-renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.setSize( 1300, 550 );
 renderer.setClearColor ( 0xffffff );
 document.body.appendChild( renderer.domElement );
 

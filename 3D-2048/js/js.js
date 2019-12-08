@@ -135,10 +135,6 @@ var colors = {
         $('#resetCamera').on('click',resetCamera);
         $('#newGame').on('click',newGame);
         $(document).on('keydown',onkeydown);
-        $(mainCanvas).on('mousemove',function(e){
-            var mousePos = getMousePosOnCanvas(mainCanvas, e);
-            $("#mouseCoordinates").find("+span").text('x = ' + mousePos.x + ', y = ' + mousePos.y);
-        });
     }
 
     function onRotationCompleted(){

@@ -5,7 +5,7 @@ var axesHelper = new THREE.AxesHelper( 100 );
 
 var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
 renderer.setSize( 1300, 550 );
-renderer.setClearColor ( 0xffffff );
+// renderer.setClearColor ( 0xffffff );
 document.body.appendChild( renderer.domElement );
 
 camera.position.x = 1000;

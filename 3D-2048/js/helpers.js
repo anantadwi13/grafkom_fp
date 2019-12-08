@@ -5,15 +5,6 @@ function async(func, callback) {
     }, 0);
 }
 
-//done
-function getMousePosOnCanvas(canvas, evt) {
-    var rect = canvas.getBoundingClientRect();
-    return {
-        x: evt.clientX - rect.left,
-        y: evt.clientY - rect.top
-    };
-}
-
 function get3DArray(n){
     var arr = [];
     for(var i = 0;i<n;++i){

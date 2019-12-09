@@ -382,7 +382,9 @@ var colors = {
         count_freePoints = getFreePoints().length;
         console.log(count_freePoints, getFreePoints());
         if(count_freePoints < num){
-            alert("Game Over!");
+            var audio = new Audio('../sound/gameover.mp3');
+            audio.play();
+            alert("Game Over! Your Score: "+score);
             newGame();
         }
         for(var i = 0; i< num; i++)

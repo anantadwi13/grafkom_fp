@@ -36,7 +36,6 @@ var colors = {
     gameNum = 0, maxScore = 0, score = 0;
     var isPlaying = 0;
 
-    //done
     function onkeydown( e ) {
         e.preventDefault();
         // console.log(isAnimating)
@@ -44,7 +43,7 @@ var colors = {
             return;
         switch (e.which) {
             /* left */     
-            case 37: {
+            case 37: { 
                 rotateCube('z',rotateDegree,rotateTime);
                 currentDirection = "left";
                 isAnimating = true;
@@ -76,7 +75,6 @@ var colors = {
         // console.log(currentDirection);
     }
 
-    //done
     function resetCamera(){
         camera.position.z = 200;
         camera.position.x = 150;
@@ -88,14 +86,12 @@ var colors = {
         camera.updateProjectionMatrix();
     }
 
-    //done
     function updateGameNum(){
         var gameNum = getGameNum();
         setGameNum(++gameNum);
         $('#gameNum').find('+span').text(getGameNum());
     }
 
-    //done
     function newGame(){
         if (isPlaying == 0) {
             var myAudio = new Audio('../sound/ingame.mp3');
@@ -111,7 +107,7 @@ var colors = {
         updateGameNum();
         cubeNum = document.getElementById('cubeNum').value;
         cubes = get3DArray(cubeNum);
-
+        // console.log(cubes)
         score = 0;
         $('#score').find('+span').text(score);
         fallTime = cubeNum > 5 ? 70 : 140;
@@ -121,7 +117,6 @@ var colors = {
         score = 0;
         $('#sore').find('+span').text(score);
 
-        // console.log(multiSum);
         resetCamera();
 
         scene.remove(group);
@@ -130,7 +125,6 @@ var colors = {
         addNewCubes();
     }
 
-    //done
     function initEvents(){
         $('#resetCamera').on('click',resetCamera);
         $('#newGame').on('click',newGame);
@@ -160,10 +154,10 @@ var colors = {
             for (var x = 0; x < cubeNum; x++)
                 for (var z = 0; z < cubeNum; z++) {
                     if (cubes[x][y][z] != undefined &&
-                        cubes[x][y - 1][z] != undefined &&
-                        cubes[x][y][z].number == cubes[x][y - 1][z].number &&
+                        cubes[x][y-1][z] != undefined &&
+                        cubes[x][y][z].number == cubes[x][y-1][z].number &&
                         cubes[x][y][z].moved == undefined &&
-                        cubes[x][y - 1][z].moved == undefined
+                        cubes[x][y-1][z].moved == undefined
                     ) {
                         addedNum++;
                     }
@@ -188,7 +182,6 @@ var colors = {
         addNewCubes();
     }
 
-    //done
     cekSound = 0; level_score = 200;
     function updateScore(curScore){
         score += curScore;
@@ -236,8 +229,7 @@ var colors = {
 
                         (function(e,x,y,z, tween){
                             tween.onComplete(function(){
-
-                                group.remove(cubes[x][y-1][z]); //
+                                group.remove(cubes[x][y-1][z]);
 
                                 cubes[x][y-1][z] = cubes[x][y][z];
                                 cubes[x][y][z] = undefined;
@@ -247,12 +239,10 @@ var colors = {
                                 cubes[x][y-1][z].material.needsUpdate = true;
 
                                 deleteArrayItem(sumTweens,tween);
-
                                 if(sumTweens.length == 0)
                                     sum();
                             });
                         })(cube,x,y,z,tween);
-
                         sumTweens.push(tween);
                     }
                 }
@@ -322,7 +312,6 @@ var colors = {
         scene.add(group);
     }
 
-    //done
     function rotateCube(axis, degree, duration){
         // allows change the values of the properties of an object in a smooth way
         rotateTween = new TWEEN.Tween(group.rotation);
@@ -348,7 +337,6 @@ var colors = {
         rotateTween.easing( TWEEN.Easing.Quadratic.InOut).start(); //Effect accelerating
     }
 
-    //done
     function initScene(){
         $('#maxScore').find('+span').text(getMaxScore());
         $('#gameNum').find('+span').text(getGameNum());
@@ -365,7 +353,6 @@ var colors = {
         newGame();
     }
 
-    //done
     function render(){
         renderer.setSize( window.innerWidth, window.innerHeight );
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -376,7 +363,6 @@ var colors = {
         requestAnimationFrame(render);
     }
 
-    //done
     function getFreePoints(){
         var freePoints = [];
         for (var x = 0; x < cubeNum; x++)
@@ -403,7 +389,6 @@ var colors = {
             addNewCube();
     }
 
-    //done
     function getCubeNumber(){
         if(Date.now() % 3 == 0)
             return 4;
@@ -507,25 +492,17 @@ var colors = {
         return tempArr;
     }
 
-    //done
     function getMaxScore(){
         return maxScore;
     }
-
-    //done
     function setMaxScore(n){
         maxScore = n;
     }
-
-    //done
     function getGameNum(){
         return gameNum;
     }
-
-    //done
     function setGameNum(n){
         gameNum = n;
     }
-
     $(document).ready(initScene);
 })();

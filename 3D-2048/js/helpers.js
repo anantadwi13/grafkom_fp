@@ -1,10 +1,3 @@
-function async(func, callback) {
-    setTimeout(function() {
-        func();
-        callback();
-    }, 0);
-}
-
 function get3DArray(n){
     var arr = [];
     for(var i = 0;i<n;++i){
@@ -32,7 +25,6 @@ function getTexture(Twidth, Theight, left, top, text, style, font, backColor) {
         case 3: left = 30;
             break;
     }
-
     var canvas = getCanvas(Twidth,Theight);
     var g = canvas.getContext('2d');
 
@@ -56,14 +48,6 @@ function getCube(a,b,c, texture){
 
 function getRandomNumber(range){
     return Math.floor((Math.random()*1000)%range);
-}
-
-function convertVectorToCanvas(vec,cubeNum,cubeWidth){
-    return new THREE.Vector3(
-        convertToCanvasCoordinates(vec.x, cubeNum, cubeWidth),
-        convertToCanvasCoordinates(vec.y, cubeNum, cubeWidth),
-        convertToCanvasCoordinates(vec.z, cubeNum, cubeWidth)
-    );
 }
 
 function convertToCanvasCoordinates(x,cubeNum,cubeWidth){

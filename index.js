@@ -4,7 +4,7 @@ var axesHelper = new THREE.AxesHelper( 100 );
 // scene.add( axesHelper );
 
 var renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
-renderer.setSize( 1300, 550 );
+renderer.setSize( window.innerWidth, window.innerHeight );
 // renderer.setClearColor ( 0xffffff );
 document.body.appendChild( renderer.domElement );
 
@@ -13,7 +13,7 @@ camera.position.y = 1500;
 camera.position.z = 1500;
 
 var control = new THREE.OrbitControls(camera, renderer.domElement);
-control.target.set(0,-1800, 0)
+control.target.set(0,-500, 0)
 control.enableDamping = true;
 control.dampingFactor = 0.25;
 control.enableZoom = true;
@@ -38,7 +38,7 @@ scene.add(toplight);
 
 
 
-num_cube = 5
+num_cube = 3
 first_pos_x = 0
 first_pos_z = 0
 cube_size = 200
@@ -58,10 +58,8 @@ var colors = {
     4096:'#9c1c4f'
 };
 is_animating = false
-
+is_playing = true
 cube_arr = []
-for (i=0; i<Math.pow(num_cube, 2); i++)
-    cube_arr.push(null);
 
 var cube_geo = new THREE.BoxGeometry( cube_size, cube_size, cube_size );
 
@@ -87,7 +85,7 @@ scene.add(block_right);
 scene.add(block_top);
 scene.add(block_bottom);
 
-random_generate(true)
+new_game()
 
 function animate(time){
     requestAnimationFrame( animate );
@@ -99,6 +97,17 @@ function animate(time){
 }
 
 animate()
+
+function new_game(){
+    if (cube_arr.length > 0)
+        for (i=0; i<Math.pow(num_cube, 2); i++)
+            scene.remove(cube_arr[i].geometry)
+    cube_arr = []
+    for (i=0; i<Math.pow(num_cube, 2); i++)
+        cube_arr.push(null);
+    random_generate(true)
+    is_playing = true
+}
 
 function random_generate(first_time=false){
     const initial_number = [2, 4]
@@ -193,6 +202,32 @@ function getTexture(Twidth, Theight, left, top, text, style, font, backColor) {
     return texture;
 }
 
+function check_game_over(){
+    for (y=0; y<num_cube; y++){
+        for (x=0; x<num_cube; x++){
+            pos = num_cube*y + x
+            if (cube_arr[pos] == null)
+                return false
+
+            if (y > 0 && cube_arr[pos].number == cube_arr[pos-num_cube].number)
+                return false
+                
+            if (y < num_cube-1 && cube_arr[pos].number == cube_arr[pos+num_cube].number)
+                return false
+
+            if (x > 0 && cube_arr[pos].number == cube_arr[pos-1].number)
+                return false
+
+            if (x < num_cube-1 && cube_arr[pos].number == cube_arr[pos+1].number)
+                return false
+        }
+    }
+    is_playing = false
+    alert("Game Over!\nScore : "+document.getElementById("score").innerHTML)
+    new_game()
+    return true
+}
+
 function swipe_animation(cube, position_target, onComplete=null){
     var tween = new TWEEN.Tween(cube.position).to(position_target, 500)
                     .easing(TWEEN.Easing.Cubic.InOut)
@@ -222,6 +257,7 @@ document.addEventListener("keydown", function(e){
     switch(e.keyCode){
         case 37:
             //left
+            if (!is_playing) return
             is_animating = true
             is_joined = false
             last_joined = false
@@ -269,9 +305,11 @@ document.addEventListener("keydown", function(e){
             if (is_moved || is_joined)
                 setTimeout(random_generate, delay)
             is_animating = false
+            check_game_over()
             break;
         case 38:
             //top
+            if (!is_playing) return
             is_animating = true
             is_joined = false
             last_joined = false
@@ -333,9 +371,11 @@ document.addEventListener("keydown", function(e){
             if (is_moved || is_joined)
                 setTimeout(random_generate, delay)
             is_animating = false
+            check_game_over()
             break;
         case 39:
             //right
+            if (!is_playing) return
             is_animating = true
             is_joined = false
             last_joined = false
@@ -383,9 +423,11 @@ document.addEventListener("keydown", function(e){
             if (is_moved || is_joined)
                 setTimeout(random_generate, delay)
             is_animating = false
+            check_game_over()
             break;
         case 40:
             //bottom
+            if (!is_playing) return
             is_animating = true
             is_joined = false
             last_joined = false
@@ -448,6 +490,7 @@ document.addEventListener("keydown", function(e){
             if (is_moved || is_joined)
                 setTimeout(random_generate, delay)
             is_animating = false
+            check_game_over()
             break;
     }
 })
